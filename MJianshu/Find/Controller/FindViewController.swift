@@ -1,0 +1,71 @@
+//
+//  FindViewController.swift
+//  MJianshu
+//
+//  Created by wjl on 15/12/15.
+//  Copyright © 2015年 Martin. All rights reserved.
+//
+
+import UIKit
+import SnapKit
+
+enum ThemeScrollViewType {
+    case Article
+    case Subject
+}
+
+class FindViewController: UIViewController, FindViewDelegate {
+    var dataModel = FindViewModel()
+    
+    lazy var articleViewController: ThemeScrollController = ThemeScrollController(type: .Article)
+    lazy var subjectViewController: ThemeScrollController = ThemeScrollController(type: .Subject)
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.automaticallyAdjustsScrollViewInsets = false
+
+        if let view = view as? FindView {
+            navigationItem.titleView = view.segmentView
+            
+            self.addChildViewController(articleViewController)
+            self.addChildViewController(subjectViewController)
+            
+            view.containerScrollView.addSubview((articleViewController.view)!)
+            articleViewController.view?.snp_makeConstraints(closure: { (make) -> Void in
+                make.top.left.equalTo(0)
+                make.width.equalTo(ScreenWidth)
+                make.bottom.equalTo(view).offset(-globalTabbarHeight)
+            })
+            
+            view.containerScrollView.addSubview((subjectViewController.view)!)
+            subjectViewController.view?.snp_makeConstraints(closure: { (make) -> Void in
+                make.left.equalTo((articleViewController.view)!).offset(ScreenWidth)
+                make.top.width.bottom.equalTo((articleViewController.view)!)
+            })
+        }
+    }
+    
+    override func loadView() {
+        view = FindView(delegate: self)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        navigationController!.navigationBar.translucent = false
+    }
+}
+
+// MARK: - 实现FindViewDelegate
+extension FindViewController {
+    func segmentValueChanged(){
+        if let view = view as? FindView {
+            view.containerScrollView.setContentOffset(CGPointMake(ScreenWidth * CGFloat(view.segmentView.selectedSegmentIndex), 0), animated: true)
+        }
+    }
+    
+    func segmentTitleArray() -> Array<String> {
+        return dataModel.segmentItemTitles
+    }
+}
+// 版权属于原作者
+// http://code4app.com (cn) http://code4app.net (en)
+// 发布代码于最专业的源码分享网站: Code4App.com
